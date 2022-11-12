@@ -82,7 +82,7 @@ class Controller:
                 return bus
 
             if bus['gear_mode'] == 'Park':
-                if bus['Speed'] == 0:
+                if bus['speed'] == 0:
                     self.current_state = 'Gear_Park'
                 else:
                     bus.update({'warning_message': 'SPEED != 0'})
@@ -94,9 +94,9 @@ class Controller:
             return bus
 
         if self.current_state == 'Gear_Neutral':
-            if bus['gear_mode'] == 'Reverse':
-                self.current_state = 'Gear_Reverse'
-                return bus
+            # if bus['gear_mode'] == 'Reverse':
+            #     self.current_state = 'Gear_Reverse'
+            #     return bus
 
             if bus['gear_mode'] == 'Drive':
                 self.current_state = 'Gear_1'
@@ -113,7 +113,7 @@ class Controller:
 
         if self.current_state == 'Gear_1':
             if bus['gear_mode'] == 'Park':
-                if bus['Speed'] == 0:
+                if bus['speed'] == 0:
                     self.current_state = 'Gear_Park'
                 else:
                     bus.update({'warning_message': 'SPEED != 0'})
@@ -123,7 +123,7 @@ class Controller:
                 self.current_state = 'Gear_Neutral'
                 return bus
 
-            if bus['RPM'] > self.MAX_1_3_RPM:
+            if bus['rpm'] > self.MAX_1_3_RPM:
                 self.current_state = 'Gear_2'
                 return bus
 
@@ -134,10 +134,18 @@ class Controller:
 
         for gear_level in range(2, 4):
             if self.current_state == 'Gear_' + str(gear_level):
-                if bus['RPM'] < self.MIN_1_3_RPM:
+                if bus['rpm'] < self.MIN_1_3_RPM:
                     self.current_state = 'Gear_' + str(gear_level - 1)
-                if bus['RPM'] > self.MAX_1_3_RPM:
+                    bus.update({'engine_signal': False,
+                                'gear': gear_level - 1,
+                                'gear_mode': 'Drive'})
+                    return bus
+                if bus['rpm'] > self.MAX_1_3_RPM:
                     self.current_state = 'Gear_' + str(gear_level + 1)
+                    bus.update({'engine_signal': False,
+                                'gear': gear_level + 1,
+                                'gear_mode': 'Drive'})
+                    return bus
 
                 bus.update({'engine_signal': False,
                             'gear': gear_level,
@@ -146,10 +154,18 @@ class Controller:
 
         for gear_level in range(4, 6):
             if self.current_state == 'Gear_' + str(gear_level):
-                if bus['RPM'] < self.MIN_4_6_RPM:
+                if bus['rpm'] < self.MIN_4_6_RPM:
                     self.current_state = 'Gear_' + str(gear_level - 1)
-                if bus['RPM'] > self.MAX_4_6_RPM:
+                    bus.update({'engine_signal': False,
+                                'gear': gear_level - 1,
+                                'gear_mode': 'Drive'})
+                    return bus
+                if bus['rpm'] > self.MAX_4_6_RPM:
                     self.current_state = 'Gear_' + str(gear_level + 1)
+                    bus.update({'engine_signal': False,
+                                'gear': gear_level + 1,
+                                'gear_mode': 'Drive'})
+                    return bus
 
                 bus.update({'engine_signal': False,
                             'gear': gear_level,
@@ -157,7 +173,7 @@ class Controller:
                 return bus
 
         if self.current_state == 'Gear_6':
-            if bus['RPM'] < self.MIN_4_6_RPM:
+            if bus['rpm'] < self.MIN_4_6_RPM:
                 self.current_state = 'Gear_5'
 
             bus.update({'engine_signal': False,

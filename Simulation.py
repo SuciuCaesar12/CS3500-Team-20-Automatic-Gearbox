@@ -1,7 +1,9 @@
 import Gearbox as GB
 import Engine as EN
 import Speedometer as SPD
+import controller as CTRL
 import keyboard
+
 
 class Simulation:
     def __init__(self):
@@ -17,11 +19,10 @@ class Simulation:
         self.gearbox = GB.Gearbox(self.bus)
         self.engine = EN.Engine()
         self.speedometer = SPD.Speedometer()
-        #self.controller = CTRL.Controller(self.bus)
+        self.controller = CTRL.Controller()
 
     def run(self):
         i = 0
-        self.bus["gear"] = 1     #Have to delete this later on, but for testing the Gear cannot be 0.
         while True:
 
             gas = False
@@ -51,14 +52,18 @@ class Simulation:
             if keyboard.is_pressed("n"):
                 self.bus["gear_mode"] = "Neutral"
 
-
-            self.bus = self.engine.run(self.bus, gear=self.bus["gear"], gas=gas)
+            self.bus = self.controller.run(self.bus, engine_button)
+            self.bus = self.engine.run(self.bus, gas=gas)
             self.bus = self.speedometer.calculate_speed(self.bus, gear=self.bus["gear"], rpm=self.bus["rpm"])
-            if i % 100 == 0:
-                print("RPM " + str(self.bus["rpm"]))
-                print("Speed " + str(self.bus["speed"]))
+
+            if i % 1000:
+                # pretty print
+                print('---------------------------------------------------------------------------------------------')
+                print(self.bus)
+                print(f'controller current state = {self.controller.current_state}')
+                print(f'Engine ON = {self.engine.Engine_On}')
+                print('---------------------------------------------------------------------------------------------\n')
             i += 1
-            #self.controller.run(self.bus, engine_button)
 
 sim = Simulation()
 sim.run()
