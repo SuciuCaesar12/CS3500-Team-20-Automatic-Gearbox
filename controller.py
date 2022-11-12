@@ -2,15 +2,165 @@ class Controller:
 
     def __init__(self):
 
-        self.gear = 0
-        self.gear_mode = 'Park'
-        self.drive_mode = 'ECO'
-        self.states = ['Engine_Off', 'Engine_On', 'Gear_Park', 'Gear_Reverse', 'Gear_Neutral',
+        self.STATES = ['Idle', 'Engine_Off', 'Engine_On', 'Gear_Park', 'Gear_Reverse', 'Gear_Neutral',
                        'Gear_1', 'Gear_2', 'Gear_3', 'Gear_4', 'Gear_5', 'Gear_6']
-        self.current_state = 'Gear_Park'
+        # initialize default states
+        self.current_state = 'Idle'
 
-        self.min_rpm = 0
-        self.max_rpm = 2000
+        # default ECO thresholds
+        self.MIN_1_3_RPM = 1500
+        self.MAX_1_3_RPM = 3000
+        self.MIN_4_6_RPM = 1500
+        self.MAX_4_6_RPM = 3000
 
-    def run(self):
-        pass
+    def run(self, bus, engine_button):
+        """
+        Component which runs the entire logic of our system.
+        :param bus: internal state values like RPM, Gear,...
+        :param gear_mode: Park, Neutral, Reverse, Drive
+        :param engine_button: True/False
+        :param drive_mode: ECO, Sport
+        :param speed: float32
+        :return:
+        """
+
+        if bus['drive_mode'] == 'E':
+            self.MIN_1_3_RPM, self.MAX_1_3_RPM = 1000, 2200
+            self.MIN_4_6_RPM, self.MAX_4_6_RPM = 1000, 2800
+        else:
+            self.MIN_1_3_RPM, self.MAX_1_3_RPM = 1000, 3000
+            self.MIN_4_6_RPM, self.MAX_4_6_RPM = 1000, 4000
+
+        if self.current_state == 'Idle':
+            if engine_button:
+                self.current_state = 'Engine_On'
+
+            bus.update({'engine_signal': False,
+                        'gear': 0,
+                        'gear_mode': 'Park'})
+            return bus
+
+        if self.current_state == 'Engine_Off':
+            self.current_state = 'Idle'
+            bus.update({'engine_signal': True,
+                        'gear': 0,
+                        'gear_mode': 'Park'})
+            return bus
+
+        if self.current_state == 'Engine_On':
+            self.current_state = 'Gear_Park'
+            bus.update({'engine_signal': True,
+                        'gear': 0,
+                        'gear_mode': 'Park'})
+            return bus
+
+        if self.current_state == 'Gear_Park':
+            if engine_button:
+                self.current_state = 'Engine_Off'
+                return bus
+
+            if bus['gear_mode'] == 'Reverse':
+                self.current_state = 'Gear_Reverse'
+                return bus
+
+            if bus['gear_mode'] == 'Neutral':
+                self.current_state = 'Gear_Neutral'
+                return bus
+
+            if bus['gear_mode'] == 'Drive':
+                self.current_state = 'Gear_1'
+                return bus
+
+            bus.update({'engine_signal': False,
+                        'gear': 0,
+                        'gear_mode': 'Park'})
+            return bus
+
+        if self.current_state == 'Gear_Reverse':
+            if bus['gear_mode'] == 'Neutral':
+                self.current_state = 'Gear_Neutral'
+                return bus
+
+            if bus['gear_mode'] == 'Park':
+                if bus['Speed'] == 0:
+                    self.current_state = 'Gear_Park'
+                else:
+                    bus.update({'warning_message': 'SPEED != 0'})
+                return bus
+
+            bus.update({'engine_signal': False,
+                        'gear': -1,
+                        'gear_mode': 'Reverse'})
+            return bus
+
+        if self.current_state == 'Gear_Neutral':
+            if bus['gear_mode'] == 'Reverse':
+                self.current_state = 'Gear_Reverse'
+                return bus
+
+            if bus['gear_mode'] == 'Drive':
+                self.current_state = 'Gear_1'
+                return bus
+
+            if bus['gear_mode'] == 'Park':
+                self.current_state = 'Gear_Park'
+                return bus
+
+            bus.update({'engine_signal': False,
+                        'gear': 0,
+                        'gear_mode': 'Neutral'})
+            return bus
+
+        if self.current_state == 'Gear_1':
+            if bus['gear_mode'] == 'Park':
+                if bus['Speed'] == 0:
+                    self.current_state = 'Gear_Park'
+                else:
+                    bus.update({'warning_message': 'SPEED != 0'})
+                return bus
+
+            if bus['gear_mode'] == 'Neutral':
+                self.current_state = 'Gear_Neutral'
+                return bus
+
+            if bus['RPM'] > self.MAX_1_3_RPM:
+                self.current_state = 'Gear_2'
+                return bus
+
+            bus.update({'engine_signal': False,
+                        'gear': 1,
+                        'gear_mode': 'Drive'})
+            return bus
+
+        for gear_level in range(2, 4):
+            if self.current_state == 'Gear_' + str(gear_level):
+                if bus['RPM'] < self.MIN_1_3_RPM:
+                    self.current_state = 'Gear_' + str(gear_level - 1)
+                if bus['RPM'] > self.MAX_1_3_RPM:
+                    self.current_state = 'Gear_' + str(gear_level + 1)
+
+                bus.update({'engine_signal': False,
+                            'gear': gear_level,
+                            'gear_mode': 'Drive'})
+                return bus
+
+        for gear_level in range(4, 6):
+            if self.current_state == 'Gear_' + str(gear_level):
+                if bus['RPM'] < self.MIN_4_6_RPM:
+                    self.current_state = 'Gear_' + str(gear_level - 1)
+                if bus['RPM'] > self.MAX_4_6_RPM:
+                    self.current_state = 'Gear_' + str(gear_level + 1)
+
+                bus.update({'engine_signal': False,
+                            'gear': gear_level,
+                            'gear_mode': 'Drive'})
+                return bus
+
+        if self.current_state == 'Gear_6':
+            if bus['RPM'] < self.MIN_4_6_RPM:
+                self.current_state = 'Gear_5'
+
+            bus.update({'engine_signal': False,
+                        'gear': 6,
+                        'gear_mode': 'Drive'})
+            return bus
