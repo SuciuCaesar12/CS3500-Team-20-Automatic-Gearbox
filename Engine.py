@@ -1,15 +1,18 @@
-import math
-
 class Engine:
     def __init__(self):
         self.RPM = 0
         self.Engine_On = False
 
-    def start_Engine(self, Engine_BTN):
-        self.Engine_On = Engine_BTN
+    def run(self, bus, gas):
+        if bus["engine_signal"]:
+            self.Engine_On = not self.Engine_On
 
-    def give_Gas(self, Gear, Speed, gear_ratio):
-        #https://www.quora.com/How-do-you-calculate-the-engine-RPM-with-a-gear-ratio
-        wheel_RPM = Speed*1000/(60*2*math.pi*0.5)
-        self.RPM = wheel_RPM*gear_ratio*4
-        return self.RPM
+        if self.Engine_On:
+            if gas:
+                self.RPM += 0.1 / 1  # is gonna be gear once the controller is involved
+            else:
+                self.RPM -= 0.05
+        else:
+            self.RPM = 0
+        bus["rpm"] = self.RPM
+        return bus
