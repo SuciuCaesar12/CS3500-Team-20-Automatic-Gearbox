@@ -52,7 +52,7 @@ class Simulation:
                 self.bus["gear_mode"] = "Neutral"
 
 
-            self.bus = self.engine.give_Gas(self.bus, gear=self.bus["gear"], gas=gas)
+            self.bus = self.engine.run(self.bus, gear=self.bus["gear"], gas=gas)
             self.bus = self.speedometer.calculate_speed(self.bus, gear=self.bus["gear"], rpm=self.bus["rpm"])
             if i % 100 == 0:
                 print("RPM " + str(self.bus["rpm"]))
