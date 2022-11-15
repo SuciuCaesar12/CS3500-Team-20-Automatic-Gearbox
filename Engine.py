@@ -26,8 +26,7 @@ class Engine:
                     if bus['gear'] == 0:
                         self.RPM = 0
                     else:
-                        self.RPM = 2500
-
+                        self.RPM = 2000
             self.current_gear = bus['gear']
 
             if self.RPM < 0:

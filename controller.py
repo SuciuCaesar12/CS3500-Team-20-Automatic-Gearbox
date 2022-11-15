@@ -2,16 +2,16 @@ class Controller:
 
     def __init__(self):
 
-        self.STATES = ['Idle', 'Engine_Off', 'Engine_On', 'Gear_Park', 'Gear_Reverse', 'Gear_Neutral',
+        self.STATES = ['Idle', 'Gear_Park', 'Gear_Reverse', 'Gear_Neutral',
                        'Gear_1', 'Gear_2', 'Gear_3', 'Gear_4', 'Gear_5', 'Gear_6']
         # initialize default states
         self.current_state = 'Idle'
 
         # default ECO thresholds
-        self.MIN_1_3_RPM = 1500
-        self.MAX_1_3_RPM = 3000
-        self.MIN_4_6_RPM = 1500
-        self.MAX_4_6_RPM = 3000
+        self.MIN_1_3_RPM = 1000
+        self.MAX_1_3_RPM = 2200
+        self.MIN_4_6_RPM = 1000
+        self.MAX_4_6_RPM = 2800
 
     def run(self, bus, engine_button):
         """
@@ -33,30 +33,23 @@ class Controller:
 
         if self.current_state == 'Idle':
             if engine_button:
-                self.current_state = 'Engine_On'
+                self.current_state = 'Gear_Park'
+                bus.update({'engine_signal': True,
+                            'gear': 0,
+                            'gear_mode': 'Park'})
+                return bus
 
             bus.update({'engine_signal': False,
                         'gear': 0,
                         'gear_mode': 'Park'})
             return bus
 
-        if self.current_state == 'Engine_Off':
-            self.current_state = 'Idle'
-            bus.update({'engine_signal': True,
-                        'gear': 0,
-                        'gear_mode': 'Park'})
-            return bus
-
-        if self.current_state == 'Engine_On':
-            self.current_state = 'Gear_Park'
-            bus.update({'engine_signal': True,
-                        'gear': 0,
-                        'gear_mode': 'Park'})
-            return bus
-
         if self.current_state == 'Gear_Park':
             if engine_button:
-                self.current_state = 'Engine_Off'
+                self.current_state = 'Idle'
+                bus.update({'engine_signal': True,
+                            'gear': 0,
+                            'gear_mode': 'Park'})
                 return bus
 
             if bus['gear_mode'] == 'Reverse':
@@ -94,10 +87,6 @@ class Controller:
             return bus
 
         if self.current_state == 'Gear_Neutral':
-            # if bus['gear_mode'] == 'Reverse':
-            #     self.current_state = 'Gear_Reverse'
-            #     return bus
-
             if bus['gear_mode'] == 'Drive':
                 self.current_state = 'Gear_1'
                 return bus
@@ -125,6 +114,9 @@ class Controller:
 
             if bus['rpm'] > self.MAX_1_3_RPM:
                 self.current_state = 'Gear_2'
+                bus.update({'engine_signal': False,
+                            'gear': 2,
+                            'gear_mode': 'Drive'})
                 return bus
 
             bus.update({'engine_signal': False,
