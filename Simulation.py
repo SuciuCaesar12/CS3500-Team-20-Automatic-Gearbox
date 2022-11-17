@@ -13,13 +13,17 @@ class Simulation:
             "engine_signal": False,
             "gear_mode": "Park",
             "drive_mode": "Eco",
-            "gear": 0
+            "gear": 0,
+            'warning_message': ''
         }
 
         self.gearbox = GB.Gearbox(self.bus)
         self.engine = EN.Engine()
         self.speedometer = SPD.Speedometer()
         self.controller = CTRL.Controller()
+
+    def __get_input(self):
+        pass
 
     def run(self):
         i = 0
@@ -65,19 +69,7 @@ class Simulation:
                 print('---------------------------------------------------------------------------------------------\n')
             i += 1
 
-sim = Simulation()
-sim.run()
 
-
-"""
-while True:
-    if keyboard.is_pressed("a"):
-        while True:
-            if keyboard.is_pressed("a"):
-                speed += 0.001
-                print(speed)
-            else:
-                speed -= 0.0001
-                print(speed)
-                
-"""
+if __name__ == '__main__':
+    sim = Simulation()
+    sim.run()

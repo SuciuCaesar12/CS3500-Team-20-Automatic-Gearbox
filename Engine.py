@@ -10,9 +10,12 @@ class Engine:
 
         if self.Engine_On:
             if gas:
-                self.RPM += 0.1 / (abs(bus['gear']) + 1e-6)  # is gonna be gear once the controller is involved
+                if bus['gear'] == 0:
+                    self.RPM += 0.1 / (1 + 1e-6)  # is gonna be gear once the controller is involved
+                else:
+                    self.RPM += 0.1 / (abs(bus['gear']) + 1e-6)
             else:
-                self.RPM -= 0.05
+                self.RPM -= 0.02
 
             if bus['gear'] == -1 and self.current_gear == 0 or (self.current_gear == -1 and bus['gear'] == 0):
                 self.RPM = 0
