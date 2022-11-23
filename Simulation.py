@@ -3,7 +3,10 @@ import Engine as EN
 import Speedometer as SPD
 import controller as CTRL
 import keyboard
-
+import time
+import Interface
+from rich.live import Live
+from rich.table import Table
 
 class Simulation:
     def __init__(self):
@@ -11,63 +14,98 @@ class Simulation:
             "rpm": 0,
             "speed": 0,
             "engine_signal": False,
+            "engine_on": False,
             "gear_mode": "Park",
             "drive_mode": "Eco",
             "gear": 0,
-            'warning_message': ''
+            "warning_message": '',
+            "warning_time": 0
         }
 
+        #Create all the necessary components for the Simulation
         self.gearbox = GB.Gearbox(self.bus)
         self.engine = EN.Engine()
         self.speedometer = SPD.Speedometer()
         self.controller = CTRL.Controller()
+        self.interface = Interface.Interface(self.bus)
+        self.interface.create_table()
+
+
+        self.exit = False
+        self.engine_button = False
+        self.valid_engine_button = 1000
+
 
     def __get_input(self):
         pass
 
     def run(self):
-        i = 0
-        while True:
+        """
+        The main loop of our Simulation. This is where the entire program happens and all other components of the car are used.
+        :return:
+        """
+        with Live(self.interface.create_table(), refresh_per_second=120) as live: #We do not count this as a node, since this loop always needs to be run.
+            while not self.exit: #-------- 2 #
+                #------------------------- 3 #
+                gas = False
+                self.engine_button = False
+                #------------------------ 3 #
 
-            gas = False
-            engine_button = False
+                #All cases of possible user-input that affects the car
+                if keyboard.is_pressed("i") and self.valid_engine_button < 0: #-------- 4 #
+                    #----------------------------------- 5 #
+                    self.engine_button = True
+                    self.valid_engine_button = 1000
+                    #---------------------------------- 5 #
 
-            if keyboard.is_pressed("i"):
-                engine_button = True
+                if keyboard.is_pressed("g"): #-------- 6 #
+                    gas = True #-------- 7 #
 
-            if keyboard.is_pressed("g"):
-                gas = True
+                if keyboard.is_pressed("s"): #-------- 8 #
+                    self.bus["drive_mode"] = "Sport" # -------- 9 #
 
-            if keyboard.is_pressed("s"):
-                self.bus["drive_mode"] = "Sport"
+                if keyboard.is_pressed("e"): #-------- 10 #
+                    self.bus["drive_mode"] = "Eco" #-------- 11 #
 
-            if keyboard.is_pressed("e"):
-                self.bus["drive_mode"] = "Eco"
+                if keyboard.is_pressed("p"): #-------- 12 #
+                    self.bus["gear_mode"] = "Park" #-------- 13 #
 
-            if keyboard.is_pressed("p"):
-                self.bus["gear_mode"] = "Park"
+                if keyboard.is_pressed("d"): #-------- 14 #
+                    self.bus["gear_mode"] = "Drive" #-------- 15 #
 
-            if keyboard.is_pressed("d"):
-                self.bus["gear_mode"] = "Drive"
+                if keyboard.is_pressed("r"): #-------- 16 #
+                    self.bus["gear_mode"] = "Reverse" #-------- 17 #
 
-            if keyboard.is_pressed("r"):
-                self.bus["gear_mode"] = "Reverse"
+                if keyboard.is_pressed("n"): #-------- 18 #
+                    self.bus["gear_mode"] = "Neutral" #-------- 19 #
 
-            if keyboard.is_pressed("n"):
-                self.bus["gear_mode"] = "Neutral"
+                #----------------------------------------------------------------------------------------------------- 20 #
+                #The Controller makes a decisions about what to do next
+                self.bus, self.gearbox = self.controller.run(self.bus, self.engine_button, self.gearbox)
 
-            self.bus = self.controller.run(self.bus, engine_button)
-            self.bus = self.engine.run(self.bus, gas=gas)
-            self.bus = self.speedometer.calculate_speed(self.bus, gear=self.bus["gear"], rpm=self.bus["rpm"])
+                #Then Engine calculates the new RPM and updates this in the bus
+                self.bus = self.engine.run(self.bus, gas=gas)
 
-            if i % 1000:
-                # pretty print
-                print('---------------------------------------------------------------------------------------------')
-                print(self.bus)
-                print(f'controller current state = {self.controller.current_state}')
-                print(f'Engine ON = {self.engine.Engine_On}')
-                print('---------------------------------------------------------------------------------------------\n')
-            i += 1
+                #The Speedometer calculates the new Speed and updates this in the bus
+                self.bus = self.speedometer.calculate_speed(self.bus, gear=self.bus["gear"], rpm=self.bus["rpm"])
+
+                self.valid_engine_button -= 1
+                self.bus["warning_time"] -= 1
+
+                #----------------------------------------------------------------------------------------------------- 20 #
+
+                #These last statements are simple statements and we don't think they require testing.
+
+                #Remove the warning message after enough time has passed
+                if self.bus["warning_time"] < 0:
+                    self.bus["warning_message"] = ""
+
+                #Exit the Simulation by pressing 'z', interrupting the while-loop
+                if keyboard.is_pressed("z"):
+                    self.exit = True
+
+                #Update the Interface by creating a new table with the updated values
+                live.update(self.interface.create_table())
 
 
 if __name__ == '__main__':
