@@ -9,7 +9,7 @@ class Controller:
 
         # default ECO thresholds
         self.MIN_RPM = 1000
-        self.MAX_RPM = 3500
+        self.MAX_RPM = 2800
 
     def run(self, bus, engine_button):
         """
@@ -22,7 +22,7 @@ class Controller:
         :return:
         """
 
-        if bus['drive_mode'] == 'E':  # ---------- 1 #
+        if bus['drive_mode'] == 'Eco':  # ---------- 1 #
             self.MIN_RPM, self.MAX_RPM = 1000, 2800  # ---------- 2 #
         else:
             self.MIN_RPM, self.MAX_RPM = 1000, 3500  # ---------- 3 #
