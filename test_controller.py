@@ -75,8 +75,9 @@ class UnitTestController(unittest.TestCase):
         bus, controller = self.__config_park_state()
 
         bus = controller.run(bus=bus, engine_button=True)
+        bus = controller.run(bus=bus, engine_button=False)
 
-        self.assertEqual(bus['engine_signal'], True)
+        self.assertEqual(controller.current_state, 'Idle')
 
     def test_path_4(self):
         bus, controller = self.__config_park_state()
