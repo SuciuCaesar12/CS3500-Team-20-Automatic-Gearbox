@@ -11,7 +11,7 @@ class Controller:
         self.MIN_RPM = 1000
         self.MAX_RPM = 2800
 
-    def run(self, bus, engine_button):
+    def run(self, bus, engine_button, gearbox):
         """
         Component which runs the entire logic of our system.
         :param bus: internal state values like RPM, Gear,...
@@ -31,16 +31,16 @@ class Controller:
             if engine_button:  # ------------ 5 #
                 # ------------------------------------------ 6 -- #
                 self.current_state = 'Gear_Park'
-                bus.update({'engine_signal': True,
-                            'gear': 0,
-                            'gear_mode': 'Park'})
+                bus.update({'engine_signal': True})
+                bus = gearbox.Change_Gear(bus, 0)
+                bus = gearbox.Change_Gearmode(bus, 'Park')
                 return bus
                 # ------------------------------------------ 6 -- #
 
             # ------------------------------------------ 7 -- #
-            bus.update({'engine_signal': False,
-                        'gear': 0,
-                        'gear_mode': 'Park'})
+            bus.update({'engine_signal': False})
+            bus = gearbox.Change_Gear(bus, 0)
+            bus = gearbox.Change_Gearmode(bus, 'Park')
             return bus
             # ------------------------------------------ 7 -- #
 
@@ -48,9 +48,9 @@ class Controller:
             if engine_button:  # ---------- 9 #
                 # ------------------------------------------ 10 -- #
                 self.current_state = 'Idle'
-                bus.update({'engine_signal': True,
-                            'gear': 0,
-                            'gear_mode': 'Park'})
+                bus.update({'engine_signal': True})
+                bus = gearbox.Change_Gear(bus, 0)
+                bus = gearbox.Change_Gearmode(bus, 'Park')
                 return bus
                 # ------------------------------------------ 10 -- #
 
@@ -73,9 +73,9 @@ class Controller:
                 # ------------------------------------------ 16 -- #
 
             # ------------------------------------------ 17 -- #
-            bus.update({'engine_signal': False,
-                        'gear': 0,
-                        'gear_mode': 'Park'})
+            bus.update({'engine_signal': False})
+            bus = gearbox.Change_Gear(bus, 0)
+            bus = gearbox.Change_Gearmode(bus, 'Park')
             return bus
             # ------------------------------------------ 17 -- #
 
@@ -100,9 +100,9 @@ class Controller:
                 # ------------------------------------------ 25 -- #
 
             # ------------------------------------------ 26 -- #
-            bus.update({'engine_signal': False,
-                        'gear': -1,
-                        'gear_mode': 'Reverse'})
+            bus.update({'engine_signal': False})
+            bus = gearbox.Change_Gear(bus, -1)
+            bus = gearbox.Change_Gearmode(bus, 'Reverse')
             return bus
             # ------------------------------------------ 26 -- #
 
@@ -120,36 +120,58 @@ class Controller:
                 # ------------------------------------------ 31 -- #
 
             # ------------------------------------------ 32 -- #
-            bus.update({'engine_signal': False,
-                        'gear': 0,
-                        'gear_mode': 'Neutral'})
+            bus.update({'engine_signal': False})
+            bus = gearbox.Change_Gear(bus, 0)
+            bus = gearbox.Change_Gearmode(bus, 'Neutral')
             return bus
             # ------------------------------------------ 32 -- #
 
         for gear_level in range(1, 7):  # ---------- 33 #
             if self.current_state == 'Gear_' + str(gear_level):  # ---------- 34 #
+                if bus['gear_mode'] == 'Park':  # ---------- 30 #
+                    if bus['speed'] == 0:
+                        # ------------------------------------------ 31 -- #
+                        self.current_state = 'Gear_Park'
+                        return bus
+                        # ------------------------------------------ 31 -- #
+                    else:
+                        bus.update({'engine_signal': False,
+                                    'warning_message': 'SPEED != 0'})
+                        bus = gearbox.Change_Gear(bus, gear_level)
+                        bus = gearbox.Change_Gearmode(bus, 'Drive')
+                        return bus
+
+                if bus['gear_mode'] == 'Neutral':  # ---------- 19 #
+                    # ------------------------------------------ 20 -- #
+                    self.current_state = 'Gear_Neutral'
+                    bus.update({'engine_signal': False})
+                    bus = gearbox.Change_Gear(bus, 0)
+                    bus = gearbox.Change_Gearmode(bus, 'Neutral')
+                    return bus
+                    # ------------------------------------------ 20 -- #
+
                 if self.current_state != 'Gear_1':  # ---------- 35 #
                     if bus['rpm'] < self.MIN_RPM:  # ---------- 36 #
                         # ------------------------------------------ 37 -- #
                         self.current_state = 'Gear_' + str(gear_level - 1)
-                        bus.update({'engine_signal': False,
-                                    'gear': gear_level - 1,
-                                    'gear_mode': 'Drive'})
+                        bus.update({'engine_signal': False})
+                        bus = gearbox.Change_Gear(bus, gear_level - 1)
+                        bus = gearbox.Change_Gearmode(bus, 'Drive')
                         return bus
                         # ------------------------------------------ 37 -- #
                 if self.current_state != 'Gear_6':  # ---------- 38 #
                     if bus['rpm'] > self.MAX_RPM:  # ---------- 39 -- #
                         # ------------------------------------------ 40 -- #
                         self.current_state = 'Gear_' + str(gear_level + 1)
-                        bus.update({'engine_signal': False,
-                                    'gear': gear_level + 1,
-                                    'gear_mode': 'Drive'})
+                        bus.update({'engine_signal': False})
+                        bus = gearbox.Change_Gear(bus, gear_level + 1)
+                        bus = gearbox.Change_Gearmode(bus, 'Drive')
                         return bus
                         # ------------------------------------------ 40 -- #
 
                 # ------------------------------------------ 41 -- #
-                bus.update({'engine_signal': False,
-                            'gear': gear_level,
-                            'gear_mode': 'Drive'})
+                bus.update({'engine_signal': False})
+                bus = gearbox.Change_Gear(bus, gear_level)
+                bus = gearbox.Change_Gearmode(bus, 'Drive')
                 return bus
                 # ------------------------------------------ 41 -- #
