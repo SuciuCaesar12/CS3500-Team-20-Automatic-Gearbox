@@ -16,12 +16,20 @@ class SpeedometerTest(unittest.TestCase):
         }
 
     def test_standard(self): #Path 1
+        """
+        Test whether the calculated speed is what we would expect according to the function in the drive gear.
+        :return:
+        """
         self.bus["gear"] = 1
         self.bus["rpm"] = 2000
         self.bus = self.Speedometer.calculate_speed(self.bus, self.bus["gear"], self.bus["rpm"])
         self.assertAlmostEqual(self.bus["speed"], 14.91, 2)
 
     def test_reverse(self):
+        """
+        Test whether the calculated speed is what we would expect according to the function in the reverse gear.
+        :return:
+        """
         self.bus["gear"] = -1
         self.bus["rpm"] = 1500
         self.bus = self.Speedometer.calculate_speed(self.bus, self.bus["gear"], self.bus["rpm"])
