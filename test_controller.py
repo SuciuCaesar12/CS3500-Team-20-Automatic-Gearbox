@@ -184,14 +184,14 @@ class UnitTestController(unittest.TestCase):
 
         self.assertEqual(bus, bus_copy)
 
-    def test_path_20(self):
+    def test_path_19(self):
         bus, controller, gearbox = self.__config_drive_state()
 
         bus, gearbox = controller.run(bus=bus, engine_button=True, gearbox=gearbox)
 
         self.assertEqual(bus['warning_message'], 'Please switch to Park.')
 
-    def test_path_21(self):
+    def test_path_20(self):
         bus, controller, gearbox = self.__config_drive_state()
 
         bus.update({'gear_mode': 'Park',
@@ -200,7 +200,7 @@ class UnitTestController(unittest.TestCase):
 
         self.assertEqual(controller.current_state, 'Gear_Park')
 
-    def test_path_22(self):
+    def test_path_21(self):
         bus, controller, gearbox = self.__config_drive_state()
 
         bus.update({'gear_mode': 'Park',
@@ -209,7 +209,7 @@ class UnitTestController(unittest.TestCase):
 
         self.assertEqual(bus['warning_message'], 'Car is not stationary!')
 
-    def test_path_23(self):
+    def test_path_22(self):
         bus, controller, gearbox = self.__config_drive_state()
 
         bus.update({'gear_mode': 'Neutral'})
@@ -217,7 +217,7 @@ class UnitTestController(unittest.TestCase):
 
         self.assertEqual(controller.current_state, 'Gear_Neutral')
 
-    def test_path_24(self):
+    def test_path_23(self):
         bus, controller, gearbox = self.__config_drive_state()
 
         controller.current_state = 'Gear_2'
@@ -226,7 +226,7 @@ class UnitTestController(unittest.TestCase):
 
         self.assertEqual(controller.current_state, 'Gear_1')
 
-    def test_path_25(self):
+    def test_path_24(self):
         bus, controller, gearbox = self.__config_drive_state()
 
         controller.current_state = 'Gear_2'
@@ -235,7 +235,7 @@ class UnitTestController(unittest.TestCase):
 
         self.assertEqual(controller.current_state, 'Gear_3')
 
-    def test_path_26(self):
+    def test_path_25(self):
         bus, controller, gearbox = self.__config_drive_state()
 
         controller.current_state = 'Gear_2'
