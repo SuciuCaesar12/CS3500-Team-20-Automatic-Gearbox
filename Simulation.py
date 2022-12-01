@@ -129,7 +129,7 @@ class Simulation:
             speed = tk.StringVar(value=str(self.bus.get("speed"))[:4] + " Km/h  ")
         else:
             speed = tk.StringVar(value=str(self.bus.get("speed"))[:4] + " Km/h ")
-        speed_dial = tk.Label(root, bg="black", fg="blue", textvariable=speed,
+        speed_dial = tk.Label(root, bg="black", fg="yellow", textvariable=speed,
                               font=('Helvatical bold', 20))
         speed_dial.place(x=570, y=220)
 
@@ -159,11 +159,18 @@ class Simulation:
         gear_mode_dis.place(x=380, y=230)
 
         # drive mode
+        drive_mode_dis1 = tk.Label(root, bg="black", fg="white",
+                                   text="Drive Mode:", font=('Helvatical bold', 10))
+        drive_mode_dis1.place(x=380, y=250)
+        if str(self.bus.get("drive_mode")) == "Eco":
+            drive_mode_dis = tk.Label(root, bg="black", fg="green",
+                                      text=str(self.bus.get("drive_mode"))+"  ", font=('Helvatical bold', 10))
+            drive_mode_dis.place(x=450, y=250)
+        else:
+            drive_mode_dis = tk.Label(root, bg="black", fg="yellow",
+                                      text=str(self.bus.get("drive_mode")), font=('Helvatical bold', 10))
+            drive_mode_dis.place(x=450, y=250)
 
-        drive_mode_val = tk.StringVar(value="Drive Mode: " + str(self.bus.get("drive_mode")) + "  ")
-        drive_mode_dis = tk.Label(root, bg="black", fg="white",
-                                  textvariable=drive_mode_val, font=('Helvatical bold', 10))
-        drive_mode_dis.place(x=380, y=250)
 
         # error message
         if len(self.bus.get("warning_message")) > 3:
