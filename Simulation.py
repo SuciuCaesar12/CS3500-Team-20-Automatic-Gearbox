@@ -193,7 +193,7 @@ def info():
     window = tk.Tk()
     window.geometry("150x280+50+50")
     window.title("Information")
-    message = "          -- controls --" \
+    message = "          -- Controls --" \
               "\n Ignition: 'I'\n" \
               "\n Gear Modes:" \
               "\n\t Drive: 'D'"\
