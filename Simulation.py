@@ -112,11 +112,11 @@ class Simulation:
                 # Update the Interface by creating a new table with the updated values
                 live.update(self.interface.create_table())
 
-    #Gui function to dissplay all variables of the car
+    # Gui function to dissplay all variables of the car
     def gui(self):
 
         # rpm dial
-        if self.bus.get("rpm")==0:
+        if self.bus.get("rpm") == 0:
             rpm = tk.StringVar(value=str(self.bus.get("rpm"))[:5] + " RPM      ")
         else:
             rpm = tk.StringVar(value=str(self.bus.get("rpm"))[:5] + " RPM")
@@ -125,7 +125,7 @@ class Simulation:
         rpm_dial.place(x=190, y=220)
 
         # speed dial
-        if self.bus.get("speed")==0:
+        if self.bus.get("speed") == 0:
             speed = tk.StringVar(value=str(self.bus.get("speed"))[:4] + " Km/h  ")
         else:
             speed = tk.StringVar(value=str(self.bus.get("speed"))[:4] + " Km/h ")
@@ -164,17 +164,16 @@ class Simulation:
         drive_mode_dis1.place(x=380, y=250)
         if str(self.bus.get("drive_mode")) == "Eco":
             drive_mode_dis = tk.Label(root, bg="black", fg="green",
-                                      text=str(self.bus.get("drive_mode"))+"  ", font=('Helvatical bold', 10))
+                                      text=str(self.bus.get("drive_mode")) + "  ", font=('Helvatical bold', 10))
             drive_mode_dis.place(x=450, y=250)
         else:
             drive_mode_dis = tk.Label(root, bg="black", fg="yellow",
                                       text=str(self.bus.get("drive_mode")), font=('Helvatical bold', 10))
             drive_mode_dis.place(x=450, y=250)
 
-
         # error message
         if len(self.bus.get("warning_message")) > 3:
-            if self.bus["warning_time"]<10:
+            if self.bus["warning_time"] < 10:
                 self.bus["warning_time"] = 500
             error_msg = tk.StringVar(value=str(self.bus.get("warning_message")))
         else:
@@ -183,15 +182,37 @@ class Simulation:
                              textvariable=error_msg, font=('Helvatical bold', 10))
         error_dis.place(x=370, y=280)
 
-        #Destroy window on Simultion exit
+        # Destroy window on Simultion exit
         if self.exit == True:
             root.destroy()
 
         root.after(100, self.gui)
 
 
+def info():
+    window = tk.Tk()
+    window.geometry("150x280+50+50")
+    window.title("Information")
+    message = "          -- controls --" \
+              "\n Ignition: 'I'\n" \
+              "\n Gear Modes:" \
+              "\n\t Drive: 'D'"\
+              "\n\t Park: 'P'"\
+              "\n\t Reverse: 'R'"\
+              "\n\t Neutral: 'N'\n"\
+              "\n Drive Modes:"\
+              "\n\t Sport: 'S'"\
+              "\n\t Eco: 'E'\n"\
+              "\n Gas(accelerate): 'G'" \
+              "\n\n Exit window: 'Z'"
+    info = tk.Text(window,font=('Cooper Std Black', 10))
+    info.pack()
+    info.insert(tk.END,message)
+    window.mainloop()
+
+
 if __name__ == '__main__':
-    root = tk.Tk()                      #starting tkinter window
+    root = tk.Tk()  # starting tkinter window
     root.title("Car Controller Simulation")
     ico = Image.open('car.png')
     photo = ImageTk.PhotoImage(ico)
@@ -201,6 +222,8 @@ if __name__ == '__main__':
     background_label.pack()
     background_label.lower()
     sim = Simulation()
-    Thread(target=sim.run).start()          #running simulation function
-    Thread(target=sim.gui).start()          #running gui funtion
+    Thread(target=sim.run).start()  # running simulation function
+    Thread(target=sim.gui).start()  # running gui funtion
+    infoBtn = tk.Button(root, text="i", command=info, bg="LightSteelBlue3", fg="white")
+    infoBtn.place(x=10, y=10)
     root.mainloop()
