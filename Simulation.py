@@ -224,6 +224,6 @@ if __name__ == '__main__':
     sim = Simulation()
     Thread(target=sim.run).start()  # running simulation function
     Thread(target=sim.gui).start()  # running gui funtion
-    infoBtn = tk.Button(root, text="i", command=info, bg="LightSteelBlue3", fg="white")
+    infoBtn = tk.Button(root, text="i", command=info, bg="blue", fg="white",font=('Times New Roman', 12))
     infoBtn.place(x=10, y=10)
     root.mainloop()
