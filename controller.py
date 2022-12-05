@@ -69,6 +69,7 @@ class Controller:
             if bus['gear_mode'] == 'Drive':  # ---------- 15 #
                 # ------------------------------------------ 16 -- #
                 self.current_state = 'Gear_1'
+                bus.update({'engine_signal': False})
                 return bus, gearbox
                 # ------------------------------------------ 16 -- #
 
@@ -82,7 +83,8 @@ class Controller:
         if self.current_state == 'Gear_Reverse':  # ---------- 18 #
             if engine_button:  # ---------- 19 #
                 # ------------------------------------------ 20 -- #
-                bus.update({'warning_message': 'Please switch to Park',
+                bus.update({'engine_signal': False,
+                            'warning_message': 'Please switch to Park',
                             'warning_time': 1000})
                 return bus, gearbox
                 # ------------------------------------------ 20 -- #
