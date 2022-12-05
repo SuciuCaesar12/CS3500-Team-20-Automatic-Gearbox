@@ -12,6 +12,8 @@ class Engine:
         :return: bus with updated value for RPM.
         """
 
+        self.RPM = bus['rpm']
+
         if bus["engine_signal"]: #1
             self.Engine_On = not self.Engine_On
             bus["engine_on"] = self.Engine_On

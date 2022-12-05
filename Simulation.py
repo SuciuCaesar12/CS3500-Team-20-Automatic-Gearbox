@@ -37,7 +37,9 @@ class Simulation:
 
         self.exit = False
         self.engine_button = False
-        self.valid_engine_button = 1000
+        self.valid_engine_button = 0
+
+        self.gas = False
 
     def __get_input(self):
         pass
@@ -47,24 +49,20 @@ class Simulation:
         The main loop of our Simulation. This is where the entire program happens and all other components of the car are used.
         :return:
         """
+
         with Live(self.interface.create_table(),
                   refresh_per_second=120) as live:  # We do not count this as a node, since this loop always needs to be run.
-            while not self.exit:  # -------- 2 #
-
-                # ------------------------- 3 #
-                gas = False
-                self.engine_button = False
-                # ------------------------ 3 #
+            # while not self.exit:  # -------- 2 #
 
                 # All cases of possible user-input that affects the car
                 if keyboard.is_pressed("i") and self.valid_engine_button < 0:  # -------- 4 #
                     # ----------------------------------- 5 #
                     self.engine_button = True
-                    self.valid_engine_button = 1000
+                    # self.valid_engine_button = 1000
                     # ---------------------------------- 5 #
 
                 if keyboard.is_pressed("g"):  # -------- 6 #
-                    gas = True  # -------- 7 #
+                    self.gas = True  # -------- 7 #
 
                 if keyboard.is_pressed("s"):  # -------- 8 #
                     self.bus["drive_mode"] = "Sport"  # -------- 9 #
@@ -89,7 +87,7 @@ class Simulation:
                 self.bus, self.gearbox = self.controller.run(self.bus, self.engine_button, self.gearbox)
 
                 # Then Engine calculates the new RPM and updates this in the bus
-                self.bus = self.engine.run(self.bus, gas=gas)
+                self.bus = self.engine.run(self.bus, gas=self.gas)
 
                 # The Speedometer calculates the new Speed and updates this in the bus
                 self.bus = self.speedometer.calculate_speed(self.bus, gear=self.bus["gear"], rpm=self.bus["rpm"])
@@ -111,6 +109,11 @@ class Simulation:
 
                 # Update the Interface by creating a new table with the updated values
                 live.update(self.interface.create_table())
+
+                # ------------------------- 3 #
+                self.gas = False
+                self.engine_button = False
+                # ------------------------ 3 #
 
     #Gui function to dissplay all variables of the car
     def gui(self):
