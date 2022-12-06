@@ -191,5 +191,16 @@ class Simulation:
 
 
 if __name__ == '__main__':
+    root = tk.Tk()                      #starting tkinter window
+    root.title("Car Controller Simulation")
+    #ico = Image.open('car.png')
+    #photo = ImageTk.PhotoImage(ico)
+    #root.wm_iconphoto(False, photo)
+    background_image = tk.PhotoImage(file="dashboard_image.png")
+    background_label = tk.Label(root, image=background_image)
+    background_label.pack()
+    background_label.lower()
     sim = Simulation()
-    sim.run()
+    Thread(target=sim.run).start()          #running simulation function
+    Thread(target=sim.gui).start()          #running gui funtion
+    root.mainloop()

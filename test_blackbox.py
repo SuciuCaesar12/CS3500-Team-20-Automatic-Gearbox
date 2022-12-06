@@ -29,7 +29,7 @@ class BlackboxTestController(unittest.TestCase):
 
         self.assertEqual(simulation.bus['engine_on'], False)
 
-    def test_stop_engine_not_park_mode(self):  # E4
+    def test_stop_engine_not_park_mode(self):  # E3
         """
         Test a safety feature.
         Engine should be turned off only when we are gear_mode is 'Park'.
@@ -46,7 +46,7 @@ class BlackboxTestController(unittest.TestCase):
 
         self.assertEqual(simulation.bus['warning_message'], 'Please switch to Park')
 
-    def test_set_park_mode_not_stationary(self):  # E4
+    def test_set_park_mode_not_stationary(self):  # E3
         """
         Test a safety feature.
         We should switch to gear_mode 'Park' only when the speed is 0
@@ -68,7 +68,7 @@ class BlackboxTestController(unittest.TestCase):
 
         self.assertEqual(simulation.bus['warning_message'], 'Car is not stationary!')
 
-    def test_max_rpm_engine(self):  # E5
+    def test_max_rpm_engine(self):  # E4
         """
         Test that the RPM can't go higher than 4500 even though the gas is still pressed
         """
@@ -96,7 +96,7 @@ class BlackboxTestController(unittest.TestCase):
 
         self.assertEqual(simulation.bus['rpm'], 4500)
 
-    def test_non_negative_rpm(self):  # E6
+    def test_non_negative_rpm(self):  # E5
         """
         Test that the rpm cannot be a negative value
         We accelerate for a few iterations, and we let the car slow down by itself
@@ -119,7 +119,7 @@ class BlackboxTestController(unittest.TestCase):
 
         self.assertEqual(simulation.bus['rpm'], 0)
 
-    def test_acceleration(self):  # E7
+    def test_acceleration(self):  # E6
         """
         Test if the rpm goes up when the gas is pressed
         """
@@ -137,7 +137,7 @@ class BlackboxTestController(unittest.TestCase):
 
         self.assertTrue(simulation.bus['rpm'] > 0)
 
-    def test_deceleration(self):  # E8
+    def test_deceleration(self):  # E7
         """
         Test if the rpm goes down when the gas is not pressed
         """
@@ -347,6 +347,35 @@ class BlackboxTestController(unittest.TestCase):
 
         self.assertEqual(simulation.bus['gear_mode'], 'Neutral')
 
+    def test_consistent_gear(self):  # G4
+        """
+        Test if the gear remains constant if the current rpm is in the range
+        of [MIN_RPM, MAX_RPM]
+        """
+        simulation = Simulation()
+        CURRENT_GEAR = 4
+
+        simulation.engine_button = True
+        simulation.run()
+        simulation.run()
+        simulation.bus["gear_mode"] = "Drive"
+        simulation.run()
+
+        for i in range(5):
+            simulation.gas = True
+            simulation.run()
+        # ... gas gas gas
+        simulation.controller.current_state = 'Gear_' + str(CURRENT_GEAR)
+        simulation.bus['rpm'] = 1200
+        simulation.bus['gear'] = CURRENT_GEAR
+        simulation.run()
+
+        for i in range(5):
+            simulation.gas = False
+            simulation.run()
+
+        self.assertEqual(simulation.bus['gear'], CURRENT_GEAR)
+
     def test_bus_update(self):  # C1
         """
         Test if the bus gets updated at each iteration
@@ -442,32 +471,5 @@ class BlackboxTestController(unittest.TestCase):
 
         self.assertEqual(round(simulation.bus['speed'], 1), -22.4)
 
-    def test_consistent_gear(self):
-        """
-        Test if the gear remains constant if the current rpm is in the range
-        of [MIN_RPM, MAX_RPM]
-        """
-        simulation = Simulation()
-        CURRENT_GEAR = 4
 
-        simulation.engine_button = True
-        simulation.run()
-        simulation.run()
-        simulation.bus["gear_mode"] = "Drive"
-        simulation.run()
-
-        for i in range(5):
-            simulation.gas = True
-            simulation.run()
-        # ... gas gas gas
-        simulation.controller.current_state = 'Gear_' + str(CURRENT_GEAR)
-        simulation.bus['rpm'] = 1200
-        simulation.bus['gear'] = CURRENT_GEAR
-        simulation.run()
-
-        for i in range(5):
-            simulation.gas = False
-            simulation.run()
-
-        self.assertEqual(simulation.bus['gear'], CURRENT_GEAR)
 
