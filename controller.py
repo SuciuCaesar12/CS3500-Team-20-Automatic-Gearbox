@@ -170,15 +170,6 @@ class Controller:
                         return bus, gearbox
                         # ------------------------------------------ 44 -- #
 
-                if bus['gear_mode'] == 'Neutral':  # ---------- 45 #
-                    # ------------------------------------------ 46 -- #
-                    self.current_state = 'Gear_Neutral'
-                    bus.update({'engine_signal': False})
-                    bus = gearbox.Change_Gear(bus, 0)
-                    bus = gearbox.Change_Gearmode(bus, 'Neutral')
-                    return bus, gearbox
-                    # ------------------------------------------ 46 -- #
-
                 if self.current_state != 'Gear_1':  # ---------- 47 #
                     if bus['rpm'] < self.MIN_RPM:  # ---------- 48 #
                         # ------------------------------------------ 49 -- #
